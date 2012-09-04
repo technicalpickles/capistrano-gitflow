@@ -81,12 +81,7 @@ Please make sure you have pulled and pushed all code before deploying:
               if respond_to?("tag_#{stage}")
                 send "tag_#{stage}" 
 
-                if remote == 'origin'
-                  system "git push --tags origin #{local_branch}"
-                else
-                  # push our tags upstream to share with everyone
-                  system "git push --tags #{remote}"
-                end
+                system "git push --tags #{remote} #{local_branch}"
 
                 if $? != 0
                   abort "git push failed"
