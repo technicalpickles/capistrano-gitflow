@@ -82,7 +82,6 @@ Please make sure you have pulled and pushed all code before deploying:
                 send "tag_#{stage}" 
 
                 system "git push --tags #{remote} #{local_branch}"
-
                 if $? != 0
                   abort "git push failed"
                 end
