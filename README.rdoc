@@ -40,10 +40,13 @@ After experimenting with several workflows for deployment in git, I've finally f
 
 * You can push to staging at any time; every staging push is automatically tagged with a unique tag.
 * You can only push a staging tag to production. This helps to enforce QA of all pushes to production.
+* If you specify :remote and :local_branch in your Cap config, you can use the latest commit from that remote and branch as your base
+  E.g. set :remote, 'upstream'
+  E.g. set :local_branch, 'master'
 
 === PUSH TO STAGING
 
-Whenever you want to push the currently checked-out code to staging, just do:
+Whenever you want to push either the currently checked-out code or your latest remote branch to staging, just do:
 
     cap staging deploy
 
@@ -51,7 +54,7 @@ gitflow will automatically:
 
 * create a unique tag in the format of 'staging-YYYY-MM-DD.X'
 * configure multistage to use that tag for the deploy
-* push the code and tags to the remote "origin"
+* push the code and tags to the remote configured as :remote in your Cap config - defaults to "origin"
 * and run the normal deploy task for the staging stage.
 
 === PUSH TO PRODUCTION:

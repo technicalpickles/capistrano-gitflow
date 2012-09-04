@@ -51,7 +51,8 @@ module Capistrano
           end
 
           task :verify_up_to_date do
-            if using_git?
+            remote = fetch(:remote, 'origin')
+            if using_git? && fetch(:remote, 'origin') == 'origin'
               set :local_branch, `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
               set :local_sha, `git log --pretty=format:%H HEAD -1`.chomp
               set :origin_sha, `git log --pretty=format:%H #{local_branch} -1`
@@ -71,14 +72,22 @@ Please make sure you have pulled and pushed all code before deploying:
 
           desc "Calculate the tag to deploy"
           task :calculate_tag do
+            remote = fetch(:remote, 'origin')
+
             if using_git?
               # make sure we have any other deployment tags that have been pushed by others so our auto-increment code doesn't create conflicting tags
-              `git fetch`
+              `git fetch --all`
 
               if respond_to?("tag_#{stage}")
                 send "tag_#{stage}" 
 
-                system "git push --tags origin #{local_branch}"
+                if remote == 'origin'
+                  system "git push --tags origin #{local_branch}"
+                else
+                  # push our tags upstream to share with everyone
+                  system "git push --tags #{remote}"
+                end
+
                 if $? != 0
                   abort "git push failed"
                 end
@@ -126,18 +135,28 @@ Please make sure you have pulled and pushed all code before deploying:
 
           desc "Mark the current code as a staging/qa release"
           task :tag_staging do
-            current_sha = `git log --pretty=format:%H HEAD -1`
+            remote = fetch(:remote, 'origin')
+            branch = fetch(:branch, 'master')
+
+            if remote == 'origin'
+              current_sha = `git log --pretty=format:%H HEAD -1`
+            else
+              # extract the SHA of remote/branch
+              current_sha = `git ls-remote --heads #{remote} | grep #{branch} | awk '{print $1}'`.strip
+            end
+
             last_staging_tag_sha = if last_staging_tag
                                      `git log --pretty=format:%H #{last_staging_tag} -1`
                                    end
 
             if last_staging_tag_sha == current_sha
-              puts "Not re-tagging staging because latest tag (#{last_staging_tag}) already points to HEAD"
+              puts "Not re-tagging staging because latest tag (#{last_staging_tag}) already points to #{remote}/#{branch}"
               new_staging_tag = last_staging_tag
             else
               new_staging_tag = next_staging_tag
               puts "Tagging current branch for deployment to staging as '#{new_staging_tag}'"
-              system "git tag -a -m 'tagging current code for deployment to staging' #{new_staging_tag}"
+              # use the current SHA to tag as we're not necessarily tagging HEAD anymore
+              system "git tag -a -m 'tagging current code for deployment to staging' #{new_staging_tag} #{current_sha}"
             end
 
             set :branch, new_staging_tag
