@@ -81,9 +81,7 @@ Please make sure you have pulled and pushed all code before deploying:
               if respond_to?("tag_#{stage}")
                 send "tag_#{stage}" 
 
-                last_tag = last_tag_matching("#{stage}-*")
-                puts "Executing git push #{remote} #{last_tag}"
-                system "git push #{remote} #{last_tag}"
+                system "git push #{remote} #{branch}"
                 if $? != 0
                   abort "git push failed"
                 end
