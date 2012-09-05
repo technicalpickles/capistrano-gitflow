@@ -52,13 +52,13 @@ module Capistrano
 
           task :verify_up_to_date do
             remote = fetch(:remote, 'origin')
-            if using_git? && fetch(:remote, 'origin') == 'origin'
+            if using_git?
               set :local_branch, `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
               set :local_sha, `git log --pretty=format:%H HEAD -1`.chomp
-              set :origin_sha, `git log --pretty=format:%H #{local_branch} -1`
+              set :origin_sha, `git log --pretty=format:%H #{remote}/#{local_branch} -1`
               unless local_sha == origin_sha
                 abort """
-Your #{local_branch} branch is not up to date with origin/#{local_branch}.
+Your #{local_branch} branch is not up to date with #{remote}/#{local_branch}.
 Please make sure you have pulled and pushed all code before deploying:
 
     git pull origin #{local_branch}
@@ -82,6 +82,7 @@ Please make sure you have pulled and pushed all code before deploying:
                 send "tag_#{stage}" 
 
                 last_tag = last_tag_matching("#{stage}-*")
+                puts "Executing git push #{remote} #{last_tag}"
                 system "git push #{remote} #{last_tag}"
                 if $? != 0
                   abort "git push failed"
@@ -131,21 +132,15 @@ Please make sure you have pulled and pushed all code before deploying:
           desc "Mark the current code as a staging/qa release"
           task :tag_staging do
             remote = fetch(:remote, 'origin')
-            branch = fetch(:branch, 'master')
 
-            if remote == 'origin'
-              current_sha = `git log --pretty=format:%H HEAD -1`
-            else
-              # extract the SHA of remote/branch
-              current_sha = `git ls-remote --heads #{remote} | grep #{branch} | awk '{print $1}'`.strip
-            end
+            current_sha = `git log --pretty=format:%H HEAD -1`
 
             last_staging_tag_sha = if last_staging_tag
                                      `git log --pretty=format:%H #{last_staging_tag} -1`
                                    end
 
             if last_staging_tag_sha == current_sha
-              puts "Not re-tagging staging because latest tag (#{last_staging_tag}) already points to #{remote}/#{branch}"
+              puts "Not re-tagging staging because latest tag (#{last_staging_tag}) already points to #{remote}/#{local_branch}"
               new_staging_tag = last_staging_tag
             else
               new_staging_tag = next_staging_tag
