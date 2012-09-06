@@ -137,7 +137,7 @@ Please make sure you have pulled and pushed all code before deploying:
                                    end
 
             if last_staging_tag_sha == current_sha
-              puts "Not re-tagging staging because latest tag (#{last_staging_tag}) already points to #{remote}/#{local_branch}"
+              puts "Not re-tagging staging because latest tag (#{last_staging_tag}) already points to #{remote}/#{branch}"
               new_staging_tag = last_staging_tag
             else
               new_staging_tag = next_staging_tag
