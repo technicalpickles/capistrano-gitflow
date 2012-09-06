@@ -132,7 +132,6 @@ Please make sure you have pulled and pushed all code before deploying:
             remote = fetch(:remote, 'origin')
 
             current_sha = `git log --pretty=format:%H HEAD -1`
-
             last_staging_tag_sha = if last_staging_tag
                                      `git log --pretty=format:%H #{last_staging_tag} -1`
                                    end
