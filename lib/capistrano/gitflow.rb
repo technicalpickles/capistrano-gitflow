@@ -143,7 +143,6 @@ Please make sure you have pulled and pushed all code before deploying:
             else
               new_staging_tag = next_staging_tag
               puts "Tagging current branch for deployment to staging as '#{new_staging_tag}'"
-              # use the current SHA to tag as we're not necessarily tagging HEAD anymore
               system "git tag -a -m 'tagging current code for deployment to staging' #{new_staging_tag} #{current_sha}"
             end
 

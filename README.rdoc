@@ -40,13 +40,12 @@ After experimenting with several workflows for deployment in git, I've finally f
 
 * You can push to staging at any time; every staging push is automatically tagged with a unique tag.
 * You can only push a staging tag to production. This helps to enforce QA of all pushes to production.
-* If you specify :remote and :local_branch in your Cap config, you can use the latest commit from that remote and branch as your base
+* If you specify :remote and in your Cap config, you can use the latest commit from that remote instead of the origin default.
   E.g. set :remote, 'upstream'
-  E.g. set :local_branch, 'master'
 
 === PUSH TO STAGING
 
-Whenever you want to push either the currently checked-out code or your latest remote branch to staging, just do:
+Whenever you want to push the currently checked-out code to staging, just do:
 
     cap staging deploy
 
