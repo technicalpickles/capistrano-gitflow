@@ -52,13 +52,13 @@ module Capistrano
 
           task :verify_up_to_date do
             remote = fetch(:remote, 'origin')
-            if using_git?
+            if using_git? && fetch(:gitflow_check, true)
               set :local_branch, `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
               set :local_sha, `git log --pretty=format:%H HEAD -1`.chomp
               set :origin_sha, `git log --pretty=format:%H #{remote}/#{local_branch} -1`
               unless local_sha == origin_sha
                 abort """
-Your #{local_branch} branch is not up to date with #{remote}/#{local_branch}.
+Your #{local_branch} branch is not up to date with #{remote}/#{local_branch} (Local #{local_sha} doesn't match remote #{origin_sha})
 Please make sure you have pulled and pushed all code before deploying:
 
     git pull origin #{local_branch}
