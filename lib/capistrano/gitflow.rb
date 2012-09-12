@@ -129,6 +129,7 @@ Please make sure you have pulled and pushed all code before deploying:
 
           desc "Mark the current code as a staging/qa release"
           task :tag_staging do
+            set :local_branch, `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
             remote = fetch(:remote, 'origin')
 
             current_sha = `git log --pretty=format:%H HEAD -1`
