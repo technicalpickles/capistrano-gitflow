@@ -12,7 +12,7 @@ namespace :gitflow do
   def ask_confirm(message, default)
     default_text=  default.nil? ? '' : "(#{default})"
     $stdout.print "#{message}: #{default_text}"
-    $stdin.gets.squeeze(' ').strip
+    $stdin.gets.chomp
   end
   
   def next_staging_tag
