@@ -26,7 +26,7 @@ module CapistranoGitFlow
     end
 
     def ask_confirm(message)
-      if CapistranoGitFlow::Helper.using_cap3?
+      if using_cap3?
         $stdout.print "#{message}"
         $stdin.gets.to_s.chomp
       else
