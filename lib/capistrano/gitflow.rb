@@ -7,7 +7,7 @@ self.extend CapistranoGitFlow::Helper
 include CapistranoGitFlow::Helper
 
 
-if CapistranoGitFlow::Helper.using_cap3?
+if using_cap3?
   require  File.join(File.dirname(__FILE__), 'tasks', 'gitflow')
 else
   require File.join(File.dirname(__FILE__), 'gitflow','legacy', 'gitflow')

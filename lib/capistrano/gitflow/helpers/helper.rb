@@ -2,13 +2,12 @@ module CapistranoGitFlow
   module Helper
     
       
-    def self.using_cap3?
+    def using_cap3?
       defined?(Capistrano::VERSION) && Capistrano::VERSION.to_s.split('.').first.to_i >= 3
     end
-
       
     def gitflow_callbacks
-      if defined?(Capistrano::VERSION) && Capistrano::VERSION.to_s.split('.').first.to_i >= 3
+      if using_cap3?
         before "deploy", "gitflow:verify_up_to_date"
       else
         before "deploy:update_code", "gitflow:verify_up_to_date"
