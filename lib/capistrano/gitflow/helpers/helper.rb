@@ -2,19 +2,19 @@ module CapistranoGitFlow
   module Helper
     
       
-      def self.using_cap3?
-        defined?(Capistrano::VERSION) && Capistrano::VERSION.to_s.split('.').first.to_i >= 3
-      end
+    def self.using_cap3?
+      defined?(Capistrano::VERSION) && Capistrano::VERSION.to_s.split('.').first.to_i >= 3
+    end
 
       
-      def gitflow_callbacks
-         if defined?(Capistrano::VERSION) && Capistrano::VERSION.to_s.split('.').first.to_i >= 3
-          before "deploy", "gitflow:verify_up_to_date"
-        else
-          before "deploy:update_code", "gitflow:verify_up_to_date"
-        end
-        after "gitflow:verify_up_to_date", "gitflow:calculate_tag"
+    def gitflow_callbacks
+      if defined?(Capistrano::VERSION) && Capistrano::VERSION.to_s.split('.').first.to_i >= 3
+        before "deploy", "gitflow:verify_up_to_date"
+      else
+        before "deploy:update_code", "gitflow:verify_up_to_date"
       end
+      after "gitflow:verify_up_to_date", "gitflow:calculate_tag"
+    end
     
     def last_tag_matching(pattern)
       # search for most recent (chronologically) tag matching the passed pattern, then get the name of that tag.
@@ -89,7 +89,7 @@ git push origin #{fetch(:local_branch)}
         rake_task_name = "gitflow:tag_#{fetch(:stage)}"
         rake = defined?(::Rake) ? ::Rake::Task[rake_task_name] :  exists?(rake_task_name) 
         if !rake.nil?
-         result =  defined?(::Rake) ?   rake.invoke : find_and_execute_task(rake_task_name)
+          result =  defined?(::Rake) ?   rake.invoke : find_and_execute_task(rake_task_name)
         
           system "git push --tags origin #{fetch(:local_branch)}"
           if $? != 0
