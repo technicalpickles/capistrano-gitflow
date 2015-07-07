@@ -12,7 +12,7 @@ namespace :gitflow do
   def ask_confirm(message, default)
     default_text=  default.nil? ? '' : "(#{default})"
     $stdout.print "#{message}: #{default_text}"
-    $stdin.gets.chomp
+    $stdin.gets.to_s.chomp
   end
   
   def next_staging_tag
@@ -20,7 +20,7 @@ namespace :gitflow do
     who = `whoami`.chomp.to_url
     what = ask_confirm("What does this release introduce? (this will be normalized and used in the tag for this release) ", nil)
   
-    abort "No tag has been provided: #{what.inspect}" if what.to_s.chomp == ''
+    abort "No tag has been provided: #{what.inspect}" if what == ''
     
     last_staging_tag = last_tag_matching("staging-#{hwhen}-*")
     new_tag_serial = if last_staging_tag && last_staging_tag =~ /staging-[0-9]{4}-[0-9]{2}-[0-9]{2}\-([0-9]*)/
