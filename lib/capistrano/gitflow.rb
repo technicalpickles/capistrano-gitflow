@@ -1,11 +1,14 @@
 # require 'capistrano'
-require File.join(File.dirname(__FILE__), 'gitflow', 'natcmp')
 require 'stringex'
-
+Gem.find_files('capistrano/gitflow/helpers/**/*.rb').each { |path| require path }
 require 'capistrano/version'
 
-if defined?(Capistrano::VERSION) && Capistrano::VERSION.to_s.split('.').first.to_i >= 3
+self.extend CapistranoGitFlow::Helper
+include CapistranoGitFlow::Helper
+
+
+if CapistranoGitFlow::Helper.using_cap3?
   require  File.join(File.dirname(__FILE__), 'tasks', 'gitflow')
 else
-   require File.join(File.dirname(__FILE__), 'gitflow','recipes', 'gitflow')
+  require File.join(File.dirname(__FILE__), 'gitflow','legacy', 'gitflow')
 end
