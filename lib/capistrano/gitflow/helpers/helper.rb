@@ -17,6 +17,8 @@ module CapistranoGitFlow
     
     def gitflow_find_task(name)
       defined?(::Rake) ? ::Rake::Task[name] :  exists?(name) 
+    rescue 
+      nil
     end
     
     def gitflow_execute_task(name)
