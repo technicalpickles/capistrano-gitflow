@@ -15,13 +15,25 @@ module CapistranoGitFlow
       after "gitflow:verify_up_to_date", "gitflow:calculate_tag"
     end
     
+    def gitflow_find_task(name)
+      defined?(::Rake) ? ::Rake::Task[name] :  exists?(name) 
+    end
+    
+    def gitflow_execute_task(name)
+      defined?(::Rake) ?  gitflow_find_task(name).invoke : find_and_execute_task(name)
+    end
+       
+    def gitflow_capistrano_tag
+     defined?(capistrano_configuration) ?  capistrano_configuration[:tag] : ENV['TAG']
+    end
+    
     def gitflow_last_tag_matching(pattern)
       # search for most recent (chronologically) tag matching the passed pattern, then get the name of that tag.
       last_tag = `git describe --exact-match  --tags --match='#{pattern}' $(git log --tags='#{pattern}*' -n1 --pretty='%h')`.chomp
       last_tag == '' ? nil : last_tag
     end
 
-    def gitflow_last_staging_tag()
+    def gitflow_last_staging_tag
       gitflow_last_tag_matching('staging-*')
     end
 
@@ -34,7 +46,7 @@ module CapistranoGitFlow
       end
     end
   
-    def gitflow_next_staging_tag()
+    def gitflow_next_staging_tag
       hwhen  = Date.today.to_s
       who = `whoami`.chomp.to_url
       what = gitflow_ask_confirm("What does this release introduce? (this will be normalized and used in the tag for this release) ")
@@ -42,7 +54,7 @@ module CapistranoGitFlow
       abort "No tag has been provided: #{what.inspect}" if what == ''
     
       last_staging_tag = gitflow_last_tag_matching("staging-#{hwhen}-*")
-      new_tag_serial = if gitflow_last_staging_tag && gitflow_last_staging_tag =~ /staging-[0-9]{4}-[0-9]{2}-[0-9]{2}\-([0-9]*)/
+      new_tag_serial = if last_staging_tag && last_staging_tag =~ /staging-[0-9]{4}-[0-9]{2}-[0-9]{2}\-([0-9]*)/
         $1.to_i + 1
       else
         1
@@ -86,9 +98,8 @@ git push origin #{fetch(:local_branch)}
         # make sure we have any other deployment tags that have been pushed by others so our auto-increment code doesn't create conflicting tags
         `git fetch`
         rake_task_name = "gitflow:tag_#{fetch(:stage)}"
-        rake = defined?(::Rake) ? ::Rake::Task[rake_task_name] :  exists?(rake_task_name) 
-        if !rake.nil?
-          result =  defined?(::Rake) ?   rake.invoke : find_and_execute_task(rake_task_name)
+        if !gitflow_find_task(rake_task_name).nil?
+            gitflow_execute_task(rake_task_name)
         
           system "git push --tags origin #{fetch(:local_branch)}"
           if $? != 0
@@ -102,21 +113,21 @@ git push origin #{fetch(:local_branch)}
     end
     
     def gitflow_commit_log
-      from_tag = if fetch(:stage) == :production
+      from_tag = if fetch(:stage).to_s == 'production'
         gitflow_last_production_tag
-      elsif fetch(:stage) == :staging
+      elsif fetch(:stage).to_s == 'staging'
         gitflow_last_staging_tag
       else
         abort "Unsupported stage #{fetch(:stage)}"
       end
 
       # no idea how to properly test for an optional cap argument a la '-s tag=x'
-      to_tag = capistrano_configuration[:tag]
+      to_tag = gitflow_capistrano_tag
       to_tag ||= begin
         puts "Calculating 'end' tag for :commit_log for '#{fetch(:stage)}'"
-        to_tag = if fetch(:stage) == :production
+        to_tag = if  fetch(:stage).to_s == 'production'
           gitflow_last_staging_tag
-        elsif fetch(:stage) == :staging
+        elsif fetch(:stage).to_s == 'staging'
           'master'
         else
           abort "Unsupported stage #{fetch(:stage)}"
@@ -147,11 +158,11 @@ git push origin #{fetch(:local_branch)}
     def gitflow_tag_staging
       current_sha = `git log --pretty=format:%H HEAD -1`
       last_staging_tag_sha = if gitflow_last_staging_tag
-        `git log --pretty=format:%H #{last_staging_tag} -1`
+        `git log --pretty=format:%H #{gitflow_last_staging_tag} -1`
       end
 
       if last_staging_tag_sha == current_sha
-        puts "Not re-tagging staging because latest tag (#{last_staging_tag}) already points to HEAD"
+        puts "Not re-tagging staging because latest tag (#{gitflow_last_staging_tag}) already points to HEAD"
         new_staging_tag = gitflow_last_staging_tag
       else
         new_staging_tag = gitflow_next_staging_tag
@@ -164,7 +175,7 @@ git push origin #{fetch(:local_branch)}
     
     
     def gitflow_tag_production
-      promote_to_production_tag = capistrano_configuration[:tag] || gitflow_last_staging_tag
+      promote_to_production_tag = gitflow_capistrano_tag || gitflow_last_staging_tag
 
       unless promote_to_production_tag && promote_to_production_tag =~ /staging-.*/
         abort "Couldn't find a staging tag to deploy; use '-s tag=staging-YYYY-MM-DD.X'"
@@ -178,14 +189,14 @@ git push origin #{fetch(:local_branch)}
 
       if new_production_tag == gitflow_last_production_tag
         puts "Not re-tagging #{last_production_tag} because it already exists"
-        really_deploy = gitflow_ask_confirm("Do you really want to deploy #{last_production_tag}? [y/N]", "N")
+        really_deploy = gitflow_ask_confirm("Do you really want to deploy #{last_production_tag}? [y/N]")
 
         exit(1) unless really_deploy.to_url =~ /^[Yy]$/
       else
         puts "Preparing to promote staging tag '#{promote_to_production_tag}' to '#{new_production_tag}'"
-        gitflow.gitflow_commit_log
-        unless capistrano_configuration[:tag]
-          really_deploy = gitflow_ask_confirm("Do you really want to deploy #{new_production_tag}? [y/N]", "N")
+        gitflow_commit_log
+        unless gitflow_capistrano_tag
+          really_deploy = gitflow_ask_confirm("Do you really want to deploy #{new_production_tag}? [y/N]")
 
           exit(1) unless really_deploy.to_url =~ /^[Yy]$/
         end

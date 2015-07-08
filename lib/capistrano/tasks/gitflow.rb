@@ -31,7 +31,7 @@ end
 namespace :deploy do
   namespace :pending do
     task :compare do
-      gitflow.gitflow_commit_log
+       gitflow_execute_task("gitflow:commit_log")
     end
   end
 end
