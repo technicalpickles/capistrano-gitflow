@@ -2,27 +2,27 @@
 namespace :gitflow do
   
   task :verify_up_to_date do
-    helper_verify_up_to_date
+    gitflow_verify_up_to_date
   end
 
   desc "Calculate the tag to deploy"
   task :calculate_tag do
-    helper_calculate_tag
+    gitflow_calculate_tag
   end
 
   desc "Show log between most recent staging tag (or given tag=XXX) and last production release."
   task :commit_log do
-    helper_commit_log
+    gitflow_commit_log
   end
 
   desc "Mark the current code as a staging/qa release"
   task :tag_staging do
-    helper_tag_staging
+    gitflow_tag_staging
   end
 
   desc "Push the approved tag to production. Pass in tag to deploy with '-s tag=staging-YYYY-MM-DD-X-feature'."
   task :tag_production do
-    helper_tag_production
+    gitflow_tag_production
   end
 
   gitflow_callbacks
@@ -31,7 +31,7 @@ end
 namespace :deploy do
   namespace :pending do
     task :compare do
-      gitflow.helper_commit_log
+       gitflow_execute_task("gitflow:commit_log")
     end
   end
 end
