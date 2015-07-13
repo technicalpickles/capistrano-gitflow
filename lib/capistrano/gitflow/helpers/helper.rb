@@ -2,6 +2,11 @@ module CapistranoGitFlow
   module Helper
     
       
+    def gitflow_stage
+      original_stage = fetch(:stage)
+      original_stage.include?(":") ? original_stage.split(':').reverse[0] : original_stage
+    end
+    
     def gitflow_using_cap3?
       defined?(Capistrano::VERSION) && Capistrano::VERSION.to_s.split('.').first.to_i >= 3
     end
@@ -17,6 +22,8 @@ module CapistranoGitFlow
     
     def gitflow_find_task(name)
       defined?(::Rake) ? ::Rake::Task[name] :  exists?(name) 
+    rescue 
+      nil
     end
     
     def gitflow_execute_task(name)
@@ -40,7 +47,8 @@ module CapistranoGitFlow
     def gitflow_ask_confirm(message)
       if gitflow_using_cap3?
         $stdout.print "#{message}"
-        $stdin.gets.to_s.chomp
+     result =    $stdin.gets.to_s.chomp
+     raise result.inspect
       else
         Capistrano::CLI.ui.ask("#{message}")
       end
@@ -60,7 +68,7 @@ module CapistranoGitFlow
         1
       end
 
-      "#{fetch(:stage)}-#{hwhen}-#{new_tag_serial}-#{who}-#{what.to_url}"
+      "#{gitflow_stage}-#{hwhen}-#{new_tag_serial}-#{who}-#{what.to_url}"
     end
 
     def gitflow_last_production_tag()
@@ -97,7 +105,7 @@ git push origin #{fetch(:local_branch)}
       if gitflow_using_git?
         # make sure we have any other deployment tags that have been pushed by others so our auto-increment code doesn't create conflicting tags
         `git fetch`
-        rake_task_name = "gitflow:tag_#{fetch(:stage)}"
+        rake_task_name = "gitflow:tag_#{gitflow_stage}"
         if !gitflow_find_task(rake_task_name).nil?
             gitflow_execute_task(rake_task_name)
         
@@ -113,24 +121,24 @@ git push origin #{fetch(:local_branch)}
     end
     
     def gitflow_commit_log
-      from_tag = if fetch(:stage).to_s == 'production'
+      from_tag = if gitflow_stage.to_s == 'production'
         gitflow_last_production_tag
-      elsif fetch(:stage).to_s == 'staging'
+      elsif gitflow_stage.to_s == 'staging'
         gitflow_last_staging_tag
       else
-        abort "Unsupported stage #{fetch(:stage)}"
+        abort "Unsupported stage #{gitflow_stage}"
       end
 
       # no idea how to properly test for an optional cap argument a la '-s tag=x'
       to_tag = gitflow_capistrano_tag
       to_tag ||= begin
-        puts "Calculating 'end' tag for :commit_log for '#{fetch(:stage)}'"
-        to_tag = if  fetch(:stage).to_s == 'production'
+        puts "Calculating 'end' tag for :commit_log for '#{gitflow_stage}'"
+        to_tag = if  gitflow_stage.to_s == 'production'
           gitflow_last_staging_tag
-        elsif fetch(:stage).to_s == 'staging'
+        elsif gitflow_stage.to_s == 'staging'
           'master'
         else
-          abort "Unsupported stage #{fetch(:stage)}"
+          abort "Unsupported stage #{gitflow_stage}"
         end
       end
       
