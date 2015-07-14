@@ -47,8 +47,7 @@ module CapistranoGitFlow
     def gitflow_ask_confirm(message)
       if gitflow_using_cap3?
         $stdout.print "#{message}"
-     result =    $stdin.gets.to_s.chomp
-     raise result.inspect
+        $stdin.gets.to_s.chomp
       else
         Capistrano::CLI.ui.ask("#{message}")
       end
