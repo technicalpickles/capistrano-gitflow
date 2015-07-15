@@ -4,7 +4,7 @@ module CapistranoGitFlow
       
     def gitflow_stage
       original_stage = fetch(:stage)
-      original_stage.include?(":") ? original_stage.split(':').reverse[0] : original_stage
+      original_stage.to_s.include?(":") ? original_stage.split(':').reverse[0] : original_stage
     end
     
     def gitflow_using_cap3?
