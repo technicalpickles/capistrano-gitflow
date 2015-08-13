@@ -15,27 +15,13 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = [
     "README.rdoc"
   ]
-  s.files = [
-    ".document",
-    "README.rdoc",
-    "Rakefile",
-    "VERSION",
-    "capistrano-gitflow.gemspec",
-    "lib/capistrano/gitflow.rb",
-    "lib/capistrano/gitflow/natcmp.rb",
-    "recipes/gitflow_recipes.rb",
-    "spec/gitflow_spec.rb",
-    "spec/spec.opts",
-    "spec/spec_helper.rb"
-  ]
+  s.files = `git ls-files`.split("\n")
+  
   s.homepage = %q{http://github.com/technicalpickles/capistrano-gitflow}
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
   s.summary = %q{Capistrano recipe for a deployment workflow based on git tags}
-  s.test_files = [
-    "spec/gitflow_spec.rb",
-    "spec/spec_helper.rb"
-  ]
+  s.test_files =s.files.grep(/^(spec)/)
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
