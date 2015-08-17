@@ -25,7 +25,7 @@ namespace :gitflow do
     gitflow_tag_production
   end
 
-  gitflow_callbacks
+  gitflow_callbacks unless defined?(Sinatra)
 end
 
 namespace :deploy do
