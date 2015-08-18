@@ -25,13 +25,13 @@ namespace :gitflow do
     gitflow_tag_production
   end
 
-  gitflow_callbacks unless defined?(Sinatra)
+  gitflow_callbacks 
 end
 
 namespace :deploy do
   namespace :pending do
     task :compare do
-       gitflow_execute_task("gitflow:commit_log")
+      gitflow_execute_task("gitflow:commit_log")
     end
   end
 end
