@@ -1,2 +1,76 @@
+# rcov generated
+coverage
+coverage.data
+
+# rdoc generated
 rdoc
+
+# yard generated
+doc
+.yardoc
+
+# bundler
+.bundle
+
+# jeweler generated
 pkg
+
+# For TextMate
+*.tmproj
+tmtags
+
+# For emacs:
+*~
+\#*
+.\#*
+
+# For vim:
+*.swp
+
+# For redcar:
+.redcar
+
+# For rubinius:
+*.rbc
+/nbproject/private/
+
+/tmp/
+
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# OS generated files #
+######################
+*~
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+.rvmrc
+s.rbx/
+.bundle/
+*.gem
+.idea/
+.rvmrc
+*.swp
+log/*.log
+pkg/
+spec/dummy/db/*.sqlite3
+spec/dummy/log/*.log
+spec/dummy/tmp/
+gemfiles
+coverage
+tags
+/nbproject/
+/.git-rewrite/
+.rbenv-version
+.ruby-version
+Gemfile.lock
