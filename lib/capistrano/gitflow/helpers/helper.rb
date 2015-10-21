@@ -21,13 +21,7 @@ module CapistranoGitFlow
     end
 
     def gitflow_find_task(name)
-    if   defined?(::Rake)
-      puts "rake"
-       ::Rake::Task[name]
-     else
-         puts "rake old"
-         exists?(name)
-    end
+      defined?(::Rake) ? ::Rake::Task[name] : exists?(name)
     rescue
       nil
     end
