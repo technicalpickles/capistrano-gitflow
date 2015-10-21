@@ -1,16 +1,16 @@
 module CapistranoGitFlow
   module Helper
-    
-      
+
+
     def gitflow_stage
       original_stage = fetch(:stage)
       original_stage.to_s.include?(":") ? original_stage.split(':').reverse[0] : original_stage
     end
-    
+
     def gitflow_using_cap3?
       defined?(Capistrano::VERSION) && Capistrano::VERSION.to_s.split('.').first.to_i >= 3
     end
-      
+
     def gitflow_callbacks
       if gitflow_using_cap3?
         before "deploy", "gitflow:verify_up_to_date"
@@ -19,21 +19,27 @@ module CapistranoGitFlow
       end
       after "gitflow:verify_up_to_date", "gitflow:calculate_tag"
     end
-    
+
     def gitflow_find_task(name)
-      defined?(::Rake) ? ::Rake::Task[name] :  exists?(name) 
-    rescue 
+    if   defined?(::Rake)
+      puts "rake"
+       ::Rake::Task[name]
+     else
+         puts "rake old"
+         exists?(name)
+    end
+    rescue
       nil
     end
-    
+
     def gitflow_execute_task(name)
       defined?(::Rake) ?  gitflow_find_task(name).invoke : find_and_execute_task(name)
     end
-       
+
     def gitflow_capistrano_tag
      defined?(capistrano_configuration) ?  capistrano_configuration[:tag] : ENV['TAG']
     end
-    
+
     def gitflow_last_tag_matching(pattern)
       # search for most recent (chronologically) tag matching the passed pattern, then get the name of that tag.
       last_tag = `git describe --exact-match  --tags --match='#{pattern}' $(git log --tags='#{pattern}*' -n1 --pretty='%h')`.chomp
@@ -52,14 +58,14 @@ module CapistranoGitFlow
         Capistrano::CLI.ui.ask("#{message}")
       end
     end
-  
+
     def gitflow_next_staging_tag
       hwhen  = Date.today.to_s
       who = `whoami`.chomp.to_url
       what = gitflow_ask_confirm("What does this release introduce? (this will be normalized and used in the tag for this release) ")
-  
+
       abort "No tag has been provided: #{what.inspect}" if what == ''
-    
+
       last_staging_tag = gitflow_last_tag_matching("staging-#{hwhen}-*")
       new_tag_serial = if last_staging_tag && last_staging_tag =~ /staging-[0-9]{4}-[0-9]{2}-[0-9]{2}\-([0-9]*)/
         $1.to_i + 1
@@ -77,8 +83,8 @@ module CapistranoGitFlow
     def gitflow_using_git?
       fetch(:scm, :git).to_sym == :git
     end
-    
-    
+
+
     def gitflow_verify_up_to_date
       if gitflow_using_git?
         set :local_branch, `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
@@ -97,17 +103,19 @@ git push origin #{fetch(:local_branch)}
         end
       end
     end
-    
-    
-    
+
+
+
     def gitflow_calculate_tag
       if gitflow_using_git?
         # make sure we have any other deployment tags that have been pushed by others so our auto-increment code doesn't create conflicting tags
         `git fetch`
         rake_task_name = "gitflow:tag_#{gitflow_stage}"
-        if !gitflow_find_task(rake_task_name).nil?
+        task_exists = gitflow_find_task(rake_task_name)
+        if !task_exists.nil? && task_exists!= false
+
             gitflow_execute_task(rake_task_name)
-        
+
           system "git push --tags origin #{fetch(:local_branch)}"
           if $? != 0
             abort "git push failed"
@@ -118,7 +126,7 @@ git push origin #{fetch(:local_branch)}
         end
       end
     end
-    
+
     def gitflow_commit_log
       from_tag = if gitflow_stage.to_s == 'production'
         gitflow_last_production_tag
@@ -140,7 +148,7 @@ git push origin #{fetch(:local_branch)}
           abort "Unsupported stage #{gitflow_stage}"
         end
       end
-      
+
 
 
       # use custom compare command if set
@@ -160,8 +168,8 @@ git push origin #{fetch(:local_branch)}
 
       puts ""
     end
-    
-    
+
+
     def gitflow_tag_staging
       current_sha = `git log --pretty=format:%H HEAD -1`
       last_staging_tag_sha = if gitflow_last_staging_tag
@@ -179,8 +187,8 @@ git push origin #{fetch(:local_branch)}
 
       set :branch, new_staging_tag
     end
-    
-    
+
+
     def gitflow_tag_production
       promote_to_production_tag = gitflow_capistrano_tag || gitflow_last_staging_tag
 
@@ -213,6 +221,6 @@ git push origin #{fetch(:local_branch)}
 
       set :branch, new_production_tag
     end
-    
+
   end
 end
