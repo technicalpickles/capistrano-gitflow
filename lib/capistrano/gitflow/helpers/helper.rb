@@ -197,8 +197,8 @@ git push origin #{fetch(:local_branch)}
       new_production_tag = "production-#{$1}"
 
       if new_production_tag == gitflow_last_production_tag
-        puts "Not re-tagging #{last_production_tag} because it already exists"
-        really_deploy = gitflow_ask_confirm("Do you really want to deploy #{last_production_tag}? [y/N]")
+        puts "Not re-tagging #{gitflow_last_production_tag} because it already exists"
+        really_deploy = gitflow_ask_confirm("Do you really want to deploy #{gitflow_last_production_tag}? [y/N]")
 
         exit(1) unless really_deploy.to_url =~ /^[Yy]$/
       else
