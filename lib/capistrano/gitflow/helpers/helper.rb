@@ -56,7 +56,7 @@ module CapistranoGitFlow
     def gitflow_next_staging_tag
       hwhen  = Date.today.to_s
       who = `whoami`.chomp.to_url
-      what = gitflow_ask_confirm("What does this release introduce? (this will be normalized and used in the tag for this release) ")
+      what = ENV['TAG_NAME'] ? ENV['TAG_NAME'] : gitflow_ask_confirm("What does this release introduce? (this will be normalized and used in the tag for this release) ")
 
       abort "No tag has been provided: #{what.inspect}" if what == ''
 
