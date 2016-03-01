@@ -31,7 +31,7 @@ module CapistranoGitFlow
     end
 
     def gitflow_capistrano_tag
-     defined?(capistrano_configuration) ?  capistrano_configuration[:tag] : ENV['TAG']
+      defined?(capistrano_configuration) ?  capistrano_configuration[:tag] : ENV['TAG']
     end
 
     def gitflow_last_tag_matching(pattern)
@@ -86,12 +86,12 @@ module CapistranoGitFlow
         set :origin_sha, `git log --pretty=format:%H #{fetch(:local_branch)} -1`
         unless fetch(:local_sha) == fetch(:origin_sha)
           abort """
-Your #{fetch(:local_branch)} branch is not up to date with origin/#{fetch(:local_branch)}.
-Please make sure you have pulled and pushed all code before deploying:
+          Your #{fetch(:local_branch)} branch is not up to date with origin/#{fetch(:local_branch)}.
+          Please make sure you have pulled and pushed all code before deploying:
 
-git pull origin #{fetch(:local_branch)}
-# run tests, etc
-git push origin #{fetch(:local_branch)}
+          git pull origin #{fetch(:local_branch)}
+          # run tests, etc
+          git push origin #{fetch(:local_branch)}
 
           """
         end
@@ -108,7 +108,7 @@ git push origin #{fetch(:local_branch)}
         task_exists = gitflow_find_task(rake_task_name)
         if !task_exists.nil? && task_exists!= false
 
-            gitflow_execute_task(rake_task_name)
+          gitflow_execute_task(rake_task_name)
 
           system "git push --tags origin #{fetch(:local_branch)}"
           if $? != 0
@@ -214,6 +214,24 @@ git push origin #{fetch(:local_branch)}
       end
 
       set :branch, new_production_tag
+    end
+
+    def gitflow_cleanup_tags
+      return if fetch(:gitflow_keep_tags).nil?
+      tags = `git for-each-ref --format='%(*committerdate:raw)%(committerdate:raw) %(refname)' refs/tags |   sort -n  | awk '{print $3}'`
+      tags = tags.split
+      if tags.count >= fetch(:gitflow_keep_tags)
+        puts "Keeping #{fetch(:gitflow_keep_tags)} Tags from total #{tags.count}"
+        tags_to_delete = (tags - tags.last(fetch(:gitflow_keep_tags)))
+        if tags_to_delete.any?
+          tags_without_refs = tags_to_delete.map{|tag| tag.gsub('refs/tags/', '') }
+          system "echo #{tags_without_refs.join(' ')} | xargs git tag -d"
+          system "echo #{tags_to_delete.join(' ')} | tr ' ' '\n'  | awk '{print \":\" $0}' | xargs git push rada "
+        else
+          puts "No tags to delete"
+        end
+      end
+
     end
 
   end
