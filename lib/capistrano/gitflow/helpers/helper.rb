@@ -226,7 +226,7 @@ module CapistranoGitFlow
         if tags_to_delete.any?
           tags_without_refs = tags_to_delete.map{|tag| tag.gsub('refs/tags/', '') }
           system "echo #{tags_without_refs.join(' ')} | xargs git tag -d"
-          system "echo #{tags_to_delete.join(' ')} | tr ' ' '\n'  | awk '{print \":\" $0}' | xargs git push rada "
+          system "echo #{tags_to_delete.join(' ')} | tr ' ' '\n'  | awk '{print \":\" $0}' | xargs git push origin "
         else
           puts "No tags to delete"
         end
