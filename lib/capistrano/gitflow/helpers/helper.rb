@@ -218,15 +218,16 @@ module CapistranoGitFlow
 
     def gitflow_cleanup_tags
       return if fetch(:gitflow_keep_tags).nil?
-      tags = `git for-each-ref --format='%(*committerdate:raw)%(committerdate:raw) %(refname)' refs/tags |   sort -n  | awk '{print $3}'`
+      tags = `git for-each-ref --format='%(*committerdate:raw)%(committerdate:raw) %(refname)' refs/tags | sort -n | awk '{print $3}'`
       tags = tags.split
       if tags.count >= fetch(:gitflow_keep_tags)
         puts "Keeping #{fetch(:gitflow_keep_tags)} Tags from total #{tags.count}"
         tags_to_delete = (tags - tags.last(fetch(:gitflow_keep_tags)))
         if tags_to_delete.any?
           tags_without_refs = tags_to_delete.map{|tag| tag.gsub('refs/tags/', '') }
-          system "echo #{tags_without_refs.join(' ')} | xargs git tag -d"
-          system "echo #{tags_to_delete.join(' ')} | tr ' ' '\n'  | awk '{print \":\" $0}' | xargs git push origin "
+          tags_with_dots = tags_to_delete.map{ |tag| tag.prepend(":") }.join(" ")
+          system "git tag -d #{tags_without_refs.join(' ')}"
+          system "git push origin #{tags_with_dots}"
         else
           puts "No tags to delete"
         end
