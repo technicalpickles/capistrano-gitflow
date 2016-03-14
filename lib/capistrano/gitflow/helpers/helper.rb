@@ -218,7 +218,7 @@ module CapistranoGitFlow
 
     def gitflow_cleanup_tags
       return if fetch(:gitflow_keep_tags).nil?
-      tags = `git for-each-ref --format='%(*committerdate:raw)%(committerdate:raw) %(refname)' refs/tags | sort -n | awk '{print $3}'`
+      tags = `git tag | xargs -I@ git log --format=format:'%ai @%n' -1 @ | grep -E "[staging|production]{1}-[0-9]{4}-[0-9]{2}-[0-9]{2}\-([0-9]*)"  | sort | awk '{print $4}'`
       tags = tags.split
       if tags.count >= fetch(:gitflow_keep_tags)
         puts "Keeping #{fetch(:gitflow_keep_tags)} Tags from total #{tags.count}"
