@@ -218,15 +218,16 @@ module CapistranoGitFlow
 
     def gitflow_cleanup_tags
       return if fetch(:gitflow_keep_tags).nil?
-      tags = `git log --tags  --simplify-by-decoration --pretty="format:%at %D" | grep 'tag:' |sort -n | awk '{$1=""; print $0}' | tr "," "\n" | sed 's/tag:*//' | sed -e 's/^[ \t]*//' |grep -E "[staging|production]{1}-[0-9]{4}-[0-9]{2}-[0-9]{2}\-([0-9]*)"`
-      tags = tags.split
+      tags = `git log --tags  --pretty="format:%at %D" | grep 'tag:' |sort -n | awk '{$1=""; print $0}' | tr "," "\n"| sed 's/tag:*//' | sed -e 's/^[ \t]*//'`
+      tags = tags.split.reject{|tag| tag.blank?  }
+      tags = tags.select { |tag| tag =~ /^(staging|production){1}-[0-9]{4}-[0-9]{2}-[0-9]{2}\-([0-9]*)/ }
       if tags.count >= fetch(:gitflow_keep_tags)
         puts "Keeping #{fetch(:gitflow_keep_tags)} Tags from total #{tags.count}"
         tags_to_delete = (tags - tags.last(fetch(:gitflow_keep_tags)))
         if tags_to_delete.any?
           system "git tag -d #{tags_to_delete.join(' ')}"
           tags_with_dots = tags_to_delete.map{ |tag| tag.prepend(':refs/tags/') }.join(' ')
-          system "git push origin #{tags_with_dots}"
+          system "git push rada #{tags_with_dots}"
         else
           puts "No tags to delete"
         end
