@@ -227,7 +227,7 @@ module CapistranoGitFlow
         if tags_to_delete.any?
           system "git tag -d #{tags_to_delete.join(' ')}"
           tags_with_dots = tags_to_delete.map{ |tag| tag.prepend(':refs/tags/') }.join(' ')
-          system "git push rada #{tags_with_dots}"
+          system "git push origin #{tags_with_dots}"
         else
           puts "No tags to delete"
         end
