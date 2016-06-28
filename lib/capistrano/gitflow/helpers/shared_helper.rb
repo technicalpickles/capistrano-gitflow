@@ -202,5 +202,6 @@ module CapistranoGitFlow
       end
 
     end
+
   end
 end

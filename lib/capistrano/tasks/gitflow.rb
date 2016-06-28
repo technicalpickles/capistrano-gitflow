@@ -26,6 +26,10 @@ namespace :gitflow do
     gitflow_tag_production
   end
 
+  task :cleanup_tags do
+    gitflow_cleanup_tags
+  end
+
   gitflow_callbacks
 end
 
