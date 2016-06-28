@@ -1,5 +1,6 @@
 
 namespace :gitflow do
+  include CapistranoGitFlow::BaseHelper if CapistranoGitFlow::Base.is_using_cap3?
 
   task :verify_up_to_date do
     gitflow_verify_up_to_date

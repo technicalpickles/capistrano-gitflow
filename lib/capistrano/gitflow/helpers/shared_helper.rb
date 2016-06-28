@@ -1,37 +1,12 @@
 module CapistranoGitFlow
-  module Helper
-
-
+  module SharedHelper
     def gitflow_stage
       original_stage = fetch(:stage)
       original_stage.to_s.include?(":") ? original_stage.split(':').reverse[0] : original_stage
     end
 
-    def gitflow_using_cap3?
-      defined?(Capistrano::VERSION) && Capistrano::VERSION.to_s.split('.').first.to_i >= 3
-    end
-
     def gitflow_callbacks
-      if gitflow_using_cap3?
-        before "deploy", "gitflow:verify_up_to_date"
-      else
-        before "deploy:update_code", "gitflow:verify_up_to_date"
-      end
       after "gitflow:verify_up_to_date", "gitflow:calculate_tag"
-    end
-
-    def gitflow_find_task(name)
-      defined?(::Rake) ? ::Rake::Task[name] : exists?(name)
-    rescue
-      nil
-    end
-
-    def gitflow_execute_task(name)
-      defined?(::Rake) ?  gitflow_find_task(name).invoke : find_and_execute_task(name)
-    end
-
-    def gitflow_capistrano_tag
-      defined?(capistrano_configuration) ?  capistrano_configuration[:tag] : ENV['TAG']
     end
 
     def gitflow_last_tag_matching(pattern)
@@ -42,15 +17,6 @@ module CapistranoGitFlow
 
     def gitflow_last_staging_tag
       gitflow_last_tag_matching('staging-*')
-    end
-
-    def gitflow_ask_confirm(message)
-      if gitflow_using_cap3?
-        $stdout.print "#{message}"
-        $stdin.gets.to_s.chomp
-      else
-        Capistrano::CLI.ui.ask("#{message}")
-      end
     end
 
     def gitflow_next_staging_tag
