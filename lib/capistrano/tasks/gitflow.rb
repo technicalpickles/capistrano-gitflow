@@ -1,7 +1,7 @@
 
 namespace :gitflow do
-  include CapistranoGitFlow::Helper
-  
+  include CapistranoGitFlow::BaseHelper
+
   task :verify_up_to_date do
     gitflow_verify_up_to_date
   end
