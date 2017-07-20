@@ -54,7 +54,7 @@ module CapistranoGitFlow
     end
 
     def gitflow_next_staging_tag
-      hwhen  = Date.today.to_s
+      hwhen  = Time.now.utc.to_date.to_s
       who = `whoami`.chomp.to_url
       what = ENV['TAG_NAME'] ? ENV['TAG_NAME'] : gitflow_ask_confirm("What does this release introduce? (this will be normalized and used in the tag for this release) ")
 
